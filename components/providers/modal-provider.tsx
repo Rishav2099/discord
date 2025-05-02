@@ -16,7 +16,7 @@ export const ModalProvider = () => {
 
   return (
     <div>
-      {/* <CreateServerModal /> */}
+      <CreateServerModal />
     </div>
   );
 };

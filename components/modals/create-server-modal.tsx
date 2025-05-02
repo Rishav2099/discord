@@ -49,7 +49,7 @@ export const CreateServerModal = () => {
       await axios.post("/api/servers", values);
       form.reset();
       router.refresh();
-      onClose();
+      onClose(); // Close modal
     } catch (error) {
       console.error(error);
     }
@@ -57,11 +57,12 @@ export const CreateServerModal = () => {
 
   const handleClose = () => {
     form.reset();
+    router.refresh()
     onClose();
   };
 
   if (!isModalOpen) {
-    return null; // Prevent rendering when modal is closed
+    return null; // Prevent rendering when closed
   }
 
   return (
