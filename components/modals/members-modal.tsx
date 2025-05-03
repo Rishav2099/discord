@@ -57,7 +57,8 @@ export const MembersModal = () => {
       setLoadingId(memberId);
       const url = qs.stringifyUrl({
         url: `/api/members/${memberId}`,
-        query: { serverId: server?.id },
+        query: { serverId: server?.id,
+         },
       });
       const response = await axios.patch(url, { role });
       router.refresh();
@@ -68,6 +69,26 @@ export const MembersModal = () => {
       setLoadingId("");
     }
   };
+
+  const onKick = async (memberId: string) => {
+    try {
+      setLoadingId(memberId)
+      const url = qs.stringifyUrl({
+        url: `/api/members/${memberId}`,
+        query: {
+          serverId: server?.id
+        }
+      })
+
+      const response = await axios.delete(url)
+      router.refresh();
+      onOpen("members", {server: response.data})
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setLoadingId('')
+    }
+  }
 
   if (!isModalOpen) {
     return null;
@@ -105,7 +126,7 @@ export const MembersModal = () => {
                         asChild
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <button>
+                        <button className="cursor-pointer">
                           <MoreVertical className="h-4 w-4 text-zinc-500" />
                         </button>
                       </DropdownMenuTrigger>
@@ -141,7 +162,9 @@ export const MembersModal = () => {
                           </DropdownMenuPortal>
                         </DropdownMenuSub>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
+                        <DropdownMenuItem 
+                        onClick={() => onKick(member.id)}
+                        >
                           <Gavel className="h-4 w-4 mr-2" />
                           Kick
                         </DropdownMenuItem>
