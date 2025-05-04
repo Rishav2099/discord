@@ -1,18 +1,18 @@
+
 import { currentProfile } from "@/lib/current-profile";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import React from "react";
 
-
-const page = async ({ params }: {params: Promise<{inviteCode: string}>}) => {
+const InvitePage = async ({ params }: { params: Promise<{ inviteCode: string }> }) => {
   const profile = await currentProfile();
-  const inviteCode = await params
+  const { inviteCode } = await params;
 
   if (!profile) {
     return redirect("/sign-in");
   }
 
-  if (inviteCode) {
+  if (!inviteCode) {
     return redirect("/");
   }
 
@@ -47,10 +47,11 @@ const page = async ({ params }: {params: Promise<{inviteCode: string}>}) => {
   });
 
   if (server) {
-    return redirect(`/servers/${server.id}`)
+    return redirect(`/servers/${server.id}`);
   }
 
-  return null
+  // Handle invalid invite code
+  return redirect("/?error=invalid_invite");
 };
 
-export default page;
+export default InvitePage;
