@@ -37,7 +37,10 @@ export async function DELETE(
     });
 
     if (!channel) {
-      return new NextResponse("Cannot delete 'general' channel or channel not found", { status: 400 });
+      return new NextResponse(
+        "Cannot delete 'general' channel or channel not found",
+        { status: 400 }
+      );
     }
 
     const server = await db.server.update({
@@ -64,6 +67,72 @@ export async function DELETE(
     return NextResponse.json(server);
   } catch (error) {
     console.log("[CHANNEL_ID_DELETE]", error);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ channelId: string }> }
+) {
+  try {
+    const profile = await currentProfile();
+    const { name, type } = await req.json();
+    const { searchParams } = new URL(req.url);
+    const { channelId } = await params;
+    const serverId = searchParams.get("serverId");
+
+    if (!profile) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    if (!serverId) {
+      return new NextResponse("Server ID Missing", { status: 400 });
+    }
+
+    if (!channelId) {
+      return new NextResponse("Channel ID Missing", { status: 400 });
+    }
+
+    if (name === "general") {
+      return new NextResponse("Name cannot be 'general' ", {
+        status: 400
+      });
+    }
+
+    const server = await db.server.update({
+      where: {
+        id: serverId,
+        members: {
+          some: {
+            profileId: profile.id,
+            role: {
+              in: [MemberRole.ADMIN, MemberRole.MODERATOR],
+            },
+          },
+        },
+      },
+      data: {
+        channels: {
+          update: {
+            where: {
+              id: channelId,
+              NOT: {
+                name: 'general'
+              }
+            },
+            data: {
+              name,
+              type,
+            }
+          }
+        }
+      },
+    });
+
+    return NextResponse.json(server);
+  } catch (error) {
+    console.log("[CHANNEL_ID_PATCH]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
